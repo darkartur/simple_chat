@@ -9,25 +9,42 @@ function loadMessages() {
     }
 }
 
-function showMessages(ul, messages) {
-    var li_items = new DocumentFragment();
+/**
+ * @param {EventTarget} event_shim
+ * @param {Element} ul
+ * @param {{text: string}} messages
+ */
+function initializeMessagesList(event_shim, ul, messages) {
 
-    messages.forEach((message) => {
-        var li = document.createElement('li');
-        li.innerText = message.text;
-        li_items.appendChild(li);
-    });
+    function appendMessages(messages) {
+        var li_items = new DocumentFragment();
 
-    ul.appendChild(li_items);
+        messages.forEach((message) => {
+            var li = document.createElement('li');
+            li.innerText = message.text;
+            li_items.appendChild(li);
+        });
+
+        ul.appendChild(li_items);
+    }
+
+    appendMessages(messages);
+
+    event_shim.addEventListener(
+        'new_message',
+        (e) => appendMessages([e.message])
+    );
 }
 
 function postMessage(text) {
-    var xhr = new XMLHttpRequest();
+    var xhr = new XMLHttpRequest(),
+        message = {
+            text: text
+        };
     xhr.open('POST', '/messages', false);
     xhr.setRequestHeader('Content-Type', 'application/json;charset=utf-8');
-    xhr.send(JSON.stringify({
-        text: text
-    }));
+    xhr.send(JSON.stringify(message));
+    return message;
 }
 
 function initializeNewMessageForm(form, postMessage) {
@@ -39,7 +56,10 @@ function initializeNewMessageForm(form, postMessage) {
 
 document.addEventListener('DOMContentLoaded',() => {
 
-    showMessages(
+
+
+    initializeMessagesList(
+        document,
         document.getElementById('messages'),
         loadMessages()
     );
@@ -47,8 +67,9 @@ document.addEventListener('DOMContentLoaded',() => {
     initializeNewMessageForm(
         document.getElementById('new_message'),
         (text) => {
-            postMessage(text);
-            location.reload();
+            var e = new Event('new_message');
+            e.message = postMessage(text);
+            document.dispatchEvent(e);
         }
     );
 
