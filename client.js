@@ -1,4 +1,4 @@
-function getMessages() {
+function loadMessages() {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', '/messages', false);
     xhr.send();
@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded',() => {
 
     showMessages(
         document.getElementById('messages'),
-        getMessages()
+        loadMessages()
     );
 
 });
