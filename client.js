@@ -12,7 +12,7 @@ function loadMessages() {
 /**
  * @param {EventTarget} event_shim
  * @param {Element} ul
- * @param {{text: string}} messages
+ * @param {{text: string}[]} messages
  */
 function initializeMessagesList(event_shim, ul, messages) {
 
@@ -55,8 +55,6 @@ function initializeNewMessageForm(form, postMessage) {
 }
 
 document.addEventListener('DOMContentLoaded',() => {
-
-
 
     initializeMessagesList(
         document,
