@@ -11,8 +11,7 @@ var map = {
     '/messages': {
         /**
          *
-         * @param {http.IncomingMessage} request
-         * @param response
+         * @param {{ text: string }} data
          * @constructor
          */
         "POST": function(data) {
