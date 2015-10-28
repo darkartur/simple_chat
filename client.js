@@ -11,15 +11,21 @@ document.addEventListener('DOMContentLoaded',() => {
         }
     }
 
-    var messages = getMessages(),
-        li_items = new DocumentFragment();
+    function showMessages(ul, messages) {
+        var li_items = new DocumentFragment();
 
-    messages.forEach((message) => {
-        var li = document.createElement('li');
-        li.innerText = message.text;
-        li_items.appendChild(li);
-    });
+        messages.forEach((message) => {
+            var li = document.createElement('li');
+            li.innerText = message.text;
+            li_items.appendChild(li);
+        });
 
-    document.getElementById('messages').appendChild(li_items);
+        ul.appendChild(li_items);
+    }
+
+    showMessages(
+        document.getElementById('messages'),
+        getMessages()
+    );
 
 });
