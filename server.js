@@ -48,7 +48,7 @@ http.createServer(function (request, response) {
             result;
 
         if (api) {
-            result = api[request.method](parseQS(body));
+            result = api[request.method](body.length && JSON.parse(body));
             response.writeHead(result.code, result.headers);
             if (result.body) {
                 response.write(JSON.stringify(result.body));
