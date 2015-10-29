@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/darkartur/simple_chat",
   "dependencies": {
-    "node-static": "^0.7.7"
+    "node-static": "^0.7.7",
+    "ws": "^0.8.0"
   }
 }

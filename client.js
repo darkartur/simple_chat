@@ -1,20 +1,17 @@
-function loadMessages() {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', '/messages', false);
-    xhr.send();
-    if (xhr.status != 200) {
-        alert('Не вышло :(');
-    } else {
-        return JSON.parse(xhr.responseText);
-    }
+function watchUpMessages(event_shim, socket) {
+
+    socket.addEventListener('message', (server_event) => {
+        var client_event = new Event('new_messages');
+        client_event.messages = JSON.parse(server_event.data);
+        event_shim.dispatchEvent(client_event);
+    });
 }
 
 /**
  * @param {EventTarget} event_shim
  * @param {Element} ul
- * @param {{text: string}[]} messages
  */
-function initializeMessagesList(event_shim, ul, messages) {
+function initializeMessagesList(event_shim, ul) {
 
     function appendMessages(messages) {
         var li_items = new DocumentFragment();
@@ -28,23 +25,16 @@ function initializeMessagesList(event_shim, ul, messages) {
         ul.appendChild(li_items);
     }
 
-    appendMessages(messages);
-
     event_shim.addEventListener(
-        'new_message',
-        (e) => appendMessages([e.message])
+        'new_messages',
+        (e) => appendMessages(e.messages)
     );
 }
 
-function postMessage(text) {
-    var xhr = new XMLHttpRequest(),
-        message = {
-            text: text
-        };
-    xhr.open('POST', '/messages', false);
-    xhr.setRequestHeader('Content-Type', 'application/json;charset=utf-8');
-    xhr.send(JSON.stringify(message));
-    return message;
+function postMessage(socket, text) {
+    socket.send(JSON.stringify({
+        text: text
+    }));
 }
 
 function initializeNewMessageForm(form, postMessage) {
@@ -56,19 +46,18 @@ function initializeNewMessageForm(form, postMessage) {
 
 document.addEventListener('DOMContentLoaded',() => {
 
+    var socket = new WebSocket("ws://localhost:8081");
+
+    watchUpMessages(document, socket);
+
     initializeMessagesList(
         document,
-        document.getElementById('messages'),
-        loadMessages()
+        document.getElementById('messages')
     );
 
     initializeNewMessageForm(
         document.getElementById('new_message'),
-        (text) => {
-            var e = new Event('new_message');
-            e.message = postMessage(text);
-            document.dispatchEvent(e);
-        }
+        (text) => postMessage(socket, text)
     );
 
 });

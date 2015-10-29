@@ -1,63 +1,49 @@
 var StaticServer = require('node-static').Server,
     http = require('http'),
+    WebSocketServer = require('ws'),
     parseQS = require('querystring').parse;
 
 var static_server = new StaticServer();
 
 var messages = [];
 
-var map = {
+// подключенные клиенты
+var clients = {},
+    next_id = 0;
 
-    '/messages': {
-        /**
-         *
-         * @param {{ text: string }} data
-         * @constructor
-         */
-        "POST": function(data) {
-            messages.push(data);
-            return {
-                code: 302,
-                headers: {
-                    'Location': '/'
-                }
-            };
-        },
+// WebSocket-сервер на порту 8081
+var webSocketServer = new WebSocketServer.Server({
+    port: 8081
+});
 
-        "GET": function() {
-            return {
-                code: 200,
-                body: messages
-            }
-        }
+function sendMessages(client_id, messages) {
+    clients[client_id].send(JSON.stringify(messages));
+}
+
+webSocketServer.on('connection', function(ws) {
+    var client_id = next_id++;
+    clients[client_id] = ws;
+
+    if (messages.length) {
+        sendMessages(client_id, messages)
     }
 
-};
+    ws.on('message', (data) => {
+        var message = JSON.parse(data);
+        messages.push(message);
+        Object.keys(clients).forEach((client_id) => sendMessages(client_id, [message]));
+    });
+
+    ws.on('close', function() {
+        delete clients[client_id];
+    });
+});
 
 
 http.createServer(function (request, response) {
-    var body = '';
-
-    request.on('data', function (chunk) {
-        body += chunk;
-    });
-
     request.addListener('end', function () {
-        var api = map[request.url],
-            result;
-
-        if (api) {
-            result = api[request.method](body.length && JSON.parse(body));
-            response.writeHead(result.code, result.headers);
-            if (result.body) {
-                response.write(JSON.stringify(result.body));
-            }
-            response.end();
-        } else {
-            static_server.serve(request, response);
-        }
-
-    });
+        static_server.serve(request, response);
+    }).resume();
 }).listen(8080);
 
 
