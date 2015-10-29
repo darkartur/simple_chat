@@ -4,7 +4,7 @@
   "description": "Interview task",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node -e \"require('grunt').tasks(['test']);\""
   },
   "repository": {
     "type": "git",
@@ -19,5 +19,12 @@
   "dependencies": {
     "node-static": "^0.7.7",
     "ws": "^0.8.0"
+  },
+  "devDependencies": {
+    "grunt-karma": "^0.12.1",
+    "jasmine": "^2.3.2",
+    "karma": "^0.13.14",
+    "karma-chrome-launcher": "^0.2.1",
+    "karma-jasmine": "^0.3.6"
   }
 }
