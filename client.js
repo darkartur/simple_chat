@@ -1,33 +1,7 @@
-function watchUpMessages(event_shim, socket) {
-
-    socket.addEventListener('message', (server_event) => {
-        var client_event = new Event('new_messages');
-        client_event.messages = JSON.parse(server_event.data);
-        event_shim.dispatchEvent(client_event);
-    });
-}
-
-/**
- * @param {EventTarget} event_shim
- * @param {Element} ul
- */
-function initializeMessagesList(event_shim, ul) {
-
-    function appendMessages(messages) {
-        var li_items = new DocumentFragment();
-
-        messages.forEach((message) => {
-            var li = document.createElement('li');
-            li.innerText = message.text;
-            li_items.appendChild(li);
-        });
-
-        ul.appendChild(li_items);
-    }
-
-    event_shim.addEventListener(
-        'new_messages',
-        (e) => appendMessages(e.messages)
+function watchUpMessages(socket, callback) {
+    socket.addEventListener(
+        'message',
+        (e) => callback(JSON.parse(e.data))
     );
 }
 
@@ -46,13 +20,16 @@ function initializeNewMessageForm(form, postMessage) {
 
 document.addEventListener('DOMContentLoaded',() => {
 
-    var socket = new WebSocket("ws://localhost:8081");
+    var socket = new WebSocket("ws://localhost:8081"),
+        messages_list;
 
-    watchUpMessages(document, socket);
-
-    initializeMessagesList(
-        document,
+    messages_list = new MessagesList(
         document.getElementById('messages')
+    );
+
+    watchUpMessages(
+        socket,
+        (messages) =>  messages_list.appendMessages(messages)
     );
 
     initializeNewMessageForm(
